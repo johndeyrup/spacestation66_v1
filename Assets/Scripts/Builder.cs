@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Builder : MonoBehaviour {
 	enum addState{
@@ -9,9 +10,10 @@ public class Builder : MonoBehaviour {
 
 	public float dist;
 	public KeyCode addKey;
-	public MeshRenderer addObject;
+	public List<GameObject> addObjects;
 
-	MeshRenderer addIndicator;
+	GameObject addIndicator;
+	public int selectedObjectIndex;
 
 	addState currentAddState;
 	// Use this for initialization
@@ -32,6 +34,9 @@ public class Builder : MonoBehaviour {
 			if(Input.GetKeyDown(KeyCode.A)){
 				CreateObjectInScene();
 			}
+			if(Input.GetKeyDown(KeyCode.Q)){
+				SwitchModule(selectedObjectIndex + 1);
+			}
 		}
 	}
 
@@ -50,12 +55,27 @@ public class Builder : MonoBehaviour {
 
 	public void StartAdd(){
 		// Make sure it does not exist yet
-		addIndicator = (MeshRenderer) Instantiate(addObject, transform.position, transform.rotation);
+		addIndicator = GetNewObject ();
 	}
 
 	public void EndAdd(){
 		// Check if exists first
 		Destroy (addIndicator);
+	}
+
+	void SwitchModule(int index){
+		Destroy (addIndicator);
+
+		selectedObjectIndex = index;
+		if (selectedObjectIndex >= addObjects.Count) {
+			selectedObjectIndex -= addObjects.Count;
+		}
+
+		addIndicator = GetNewObject ();
+	}
+
+	GameObject GetNewObject(){
+		return (GameObject) Instantiate(addObjects[selectedObjectIndex], GetPlacementPosition(), GetPlacementRotation());
 	}
 
 	void SetIndicatorPosition(){
@@ -64,13 +84,20 @@ public class Builder : MonoBehaviour {
 	}
 
 	void CreateObjectInScene(){
-		Instantiate (addObject, GetPlacementPosition(), GetPlacementRotation());
+		GetNewObject ();
 	}
 
 	Vector3 GetPlacementPosition(){
 		Transform ct = Camera.main.transform;
+		float y = ct.transform.rotation.eulerAngles.y;
+		Vector3 pos = ct.TransformVector(new Vector3(0,0, dist * Mathf.Cos(y)));
+		pos.z = 0;
+		float value = Mathf.Sin ((y * (Mathf.PI / 180.0f)));
+		Vector3 output = new Vector3 (0, 0, (1.0f / value));
 
-		return ct.TransformVector(new Vector3(0,0, dist));
+		print (value);
+
+		return output;
 	}
 
 	Quaternion GetPlacementRotation(){
@@ -78,6 +105,8 @@ public class Builder : MonoBehaviour {
 
 		Quaternion rotation = ct.rotation;
 		rotation.x = 0;
+		rotation.y = 0;
+		rotation.z = 0;
 		return rotation;
 	}
 }
