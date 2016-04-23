@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Placement : MonoBehaviour {
+public class Builder : MonoBehaviour {
 	enum addState{
 		add,
 		none
